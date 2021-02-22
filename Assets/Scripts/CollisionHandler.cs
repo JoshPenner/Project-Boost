@@ -3,23 +3,55 @@ using UnityEngine.SceneManagement;
 
 public class CollisionHandler : MonoBehaviour
 {
-    void OnCollisionEnter(Collision other)
+    [SerializeField] float levelLoadDelay = 1f;
+    [SerializeField] AudioClip crash;
+    [SerializeField] AudioClip success;
+
+    AudioSource audioSource;
+
+    bool isTransitioning = false;
+
+    // Start is called before the first frame update
+    void Start()
     {
+        audioSource = GetComponent<AudioSource>();
+    }
+
+    void OnCollisionEnter(Collision other)
+    {   
+        if(isTransitioning){ return;}
         switch (other.gameObject.tag)
         {
             case "Friendly":
                 Debug.Log("this is friendly");
                 break;
             case "Finish":
-                LoadNextLevel();
-                break;
-            case "Fuel":
-                Debug.Log("You picked up fuel");
+                StartSuccessSequence();
                 break;
             default:
-                ReloadLevel();
+                StartCrashSequence();
                 break;
         }
+    }
+    
+    void StartCrashSequence()
+    {
+        isTransitioning = true;
+        audioSource.Stop();
+        audioSource.PlayOneShot(crash, 0.6f);
+        // todo add particle effect upon crash
+        GetComponent<PlayerMovement>().enabled = false;
+        Invoke("ReloadLevel", levelLoadDelay);
+    }
+    
+    void StartSuccessSequence()
+    {
+        isTransitioning = true;
+        audioSource.Stop();
+        audioSource.PlayOneShot(success);
+        // todo add particle effect upon crash
+        GetComponent<PlayerMovement>().enabled = false;
+        Invoke("LoadNextLevel", levelLoadDelay);
     }
 
     void ReloadLevel()
@@ -38,4 +70,5 @@ public class CollisionHandler : MonoBehaviour
         }
         SceneManager.LoadScene(nextSceneIndex);
     }
+
 }

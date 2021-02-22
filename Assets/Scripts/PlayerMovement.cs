@@ -5,10 +5,19 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    // PARAMETERS - for tuning, typically set in the editor
     [SerializeField] float mainThrust = 100f;
     [SerializeField] float rotationThrust = 100f;
+    [SerializeField] AudioClip mainEngine;
+    [SerializeField] AudioClip mainEngineOff;
+
+    // CACHE - e.g. references for readability or speed
     Rigidbody rb;
     AudioSource audioSource;
+
+    // STATE - private instance (member) variables
+    bool engineOn = false;
+
         
     // Start is called before the first frame update
     void Start()
@@ -29,14 +38,20 @@ public class PlayerMovement : MonoBehaviour
         if(Input.GetKey(KeyCode.Space))
         {
             rb.AddRelativeForce(Vector3.up * mainThrust * Time.deltaTime);
-            if(!audioSource.isPlaying)
+            if(engineOn == false)
             {
-                audioSource.Play();
+                engineOn = true;
+                audioSource.PlayOneShot(mainEngine);
             }
         }
         else
         {
-            audioSource.Stop();
+        if(engineOn == true)
+            {
+                engineOn = false;
+                audioSource.Stop();
+                audioSource.PlayOneShot(mainEngineOff);
+            }
         }
         
     }
