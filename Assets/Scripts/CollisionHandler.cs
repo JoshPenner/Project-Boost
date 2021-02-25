@@ -7,9 +7,13 @@ public class CollisionHandler : MonoBehaviour
     [SerializeField] AudioClip crash;
     [SerializeField] AudioClip success;
 
+    [SerializeField] ParticleSystem crashParticles;
+    [SerializeField] ParticleSystem successParticles;
+
     AudioSource audioSource;
 
     bool isTransitioning = false;
+    bool collisionsOn = true;
 
     // Start is called before the first frame update
     void Start()
@@ -17,9 +21,27 @@ public class CollisionHandler : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
     }
 
+    // Update is called once per frame
+    void Update()
+    {
+        ProcessDebugKeys();
+    }
+
+    void ProcessDebugKeys()
+    {
+        if(Input.GetKeyDown(KeyCode.L))
+        {
+            LoadNextLevel();
+        }
+        else if(Input.GetKeyDown(KeyCode.C))
+        {
+            collisionsOn = !collisionsOn;
+        }
+    }
+
     void OnCollisionEnter(Collision other)
     {   
-        if(isTransitioning){ return;}
+        if(isTransitioning || !collisionsOn){ return;}
         switch (other.gameObject.tag)
         {
             case "Friendly":
@@ -39,7 +61,7 @@ public class CollisionHandler : MonoBehaviour
         isTransitioning = true;
         audioSource.Stop();
         audioSource.PlayOneShot(crash, 0.6f);
-        // todo add particle effect upon crash
+        crashParticles.Play();
         GetComponent<PlayerMovement>().enabled = false;
         Invoke("ReloadLevel", levelLoadDelay);
     }
@@ -49,7 +71,7 @@ public class CollisionHandler : MonoBehaviour
         isTransitioning = true;
         audioSource.Stop();
         audioSource.PlayOneShot(success);
-        // todo add particle effect upon crash
+        successParticles.Play();
         GetComponent<PlayerMovement>().enabled = false;
         Invoke("LoadNextLevel", levelLoadDelay);
     }
